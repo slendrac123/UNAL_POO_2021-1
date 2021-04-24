@@ -207,6 +207,52 @@ def consultarLote():
 
     con.close()
 
+def menuModuloTres():
+    while True:
+        opcion = input('Ingrese el numero de la opcion que desea realizar:\n1. Crear plan de vacunación\n2. Consultar plan de vacunación\n3. Salir\n')
+        if opcion != '': 
+            opcion = int(opcion)
+            if (opcion == 1): crearPlanVacunacion()
+            if (opcion == 2): consultarPlanVacunacion()
+            if (opcion == 3): break
+        else: continue
+
+def crearPlanVacunacion():
+    con = sqlConnection() 
+    cursorObj = con.cursor()
+    print('Ingrese a continuacion los datos del plan de vacunación que desea crear:')
+    idPlan = int(input('Codigo del plan:\n'))
+    cursorObj.execute('SELECT * FROM plan_vacunacion WHERE idPlan = {}'.format(idPlan))
+    resultado = cursorObj.fetchall()
+    if len(resultado) == 0:
+        edadMinima = int(input('Edad minima requerida:\n'))
+        edadMaxima = int(input('Edad maxima requerida:\n'))
+        fechaInicio = input('Fecha de inicio del plan (DDMMAAAA):\n')
+        fechaFinal = input('Fecha de finalización del plan (DDMMAAAA):\n')
+        cursorObj.execute('INSERT INTO plan_vacunacion VALUES ({a},{b},{c},"{d}","{e}")'.format(a=idPlan, b=edadMinima, c=edadMaxima, d=fechaInicio, e=fechaFinal))
+        con.commit()
+    else:
+        print('Este Plan ya existe\n')
+    
+    con.close()
+
+def consultarPlanVacunacion():
+    con = sqlConnection()
+    cursorObj = con.cursor()
+    print('Ingrese a continuacion los datos del plan de vacunación que desea consultar:')
+    idPlan = int(input('Codigo del plan: '))
+    cursorObj.execute('SELECT * FROM plan_vacunacion WHERE idPlan = {}'.format(idPlan))
+    resultado = cursorObj.fetchall()
+    print('\n')
+    if len(resultado) != 0:
+        for datos in resultado[0]:
+            if datos != '': print(datos)
+        print('\n')
+    else: print('El plan de vacunación no se encuentra registrado.\n')
+
+    con.close()
+
 crearTablas()
 menuModuloUno()
 menuModuloDos()
+menuModuloTres()
