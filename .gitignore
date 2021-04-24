@@ -27,6 +27,8 @@ share/python-wheels/
 *.egg
 *.db
 *.json
+*.docx
+*.xlsx
 MANIFEST
 
 # PyInstaller
