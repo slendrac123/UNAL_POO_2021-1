@@ -202,15 +202,10 @@ def crearLote():
         añoVencimiento = añoVencimiento.ljust(4)
         fechaVencimiento = "{}-{}-{}".format(añoVencimiento,mesVencimiento,diaVencimiento)
         rutaImagen = input('Ruta completa a la imagen:\n')
-        rutaImagen = '/home/alpha23/Pictures/Screenshot_20210316_011734.png'
         with open(rutaImagen, "rb") as File:
             imagenBinaria = File.read()
-        # print(imagenBinaria)
-        # print(type(imagenBinaria))
-        # Direccion de prueba: /home/alpha23/Pictures/Screenshot_20210316_011734.png
-
-        # # TODO Encontrar forma de almacenar la imagen
-        cursorObj.execute('INSERT INTO lote_vacunas VALUES ({a},"{b}","{c}",{d},{e},{f},{g},{h},{i},date("{j}"),"")'.format(a=numeroLote, b=fabricante, c=tipoVacuna, d=cantidadRecibida, e=cantidadUsada, f=dosisNecesaria, g=temperatura, h =efectividad, i=tiempoProteccion, j=fechaVencimiento, k=imagenBinaria))
+        info = (numeroLote, fabricante, tipoVacuna, cantidadRecibida, cantidadUsada, dosisNecesaria, temperatura, efectividad, tiempoProteccion, fechaVencimiento, imagenBinaria)
+        cursorObj.execute('INSERT INTO lote_vacunas VALUES (?,?,?,?,?,?,?,?,?,date(?),?)', info)
         con.commit()
     else:
         print('Este lote de vacunas ya existe\n')
