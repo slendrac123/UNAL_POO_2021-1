@@ -19,8 +19,8 @@ def insert(filePath):
     with open(filePath, "rb") as File:
         imagenBinaria = sqlite3.Binary(File.read())
     sqlStatement = "insert into image (image) VALUES ({})"
-    cursorObj.execute(sqlStatement.format(imagenBinaria))
+    cursorObj.execute(sqlStatement.format(sqlite3.Binary(imagenBinaria)))
     cursorObj.commit()
     con.close()
 
-insert('/home/alpha23/Pictures/Screenshot_20210316_011734.png')
+insert('./imagenes/pfizer.jpg')

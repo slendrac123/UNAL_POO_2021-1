@@ -29,6 +29,8 @@ share/python-wheels/
 *.json
 *.docx
 *.xlsx
+*.docx#
+*.xlsx#
 MANIFEST
 
 # PyInstaller
