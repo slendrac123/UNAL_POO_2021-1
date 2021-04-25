@@ -1,5 +1,8 @@
 import sqlite3
 from sqlite3 import Error
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 ## TODO comments
 
@@ -285,7 +288,52 @@ def consultarPlanVacunacion():
 
     con.close()
 
-crearTablas()
-menuModuloUno()
-menuModuloDos()
-menuModuloTres()
+def menuModuloCuatro():
+    while True:
+        opcion = input('¿Desea crear la programacion de vacunacion?:\n1. Si\n2. No\n')
+        if opcion != '': 
+            opcion = int(opcion)
+            if (opcion == 1): programacionDeVacunacion()
+            if (opcion == 2): break
+        else: continue
+
+def programacionDeVacunacion():
+    pass
+
+def enviarCorreo(destinatario, dia, hora, vacuna):
+    mensajeObj = MIMEMultipart()
+    mensaje = '''Cordial saludo.
+    Le notificamos que su cita de vacunacion esta programada para el dia {} a las {}. Le sera aplicada la vacuna {}.'''
+
+    mensajeObj['From'] = 'pruebas.vacunacion@gmail.com'
+    mensajeObj['To'] = destinatario
+    mensajeObj['Subject'] = 'Email de prueba'
+    password = 'TEST_123*'
+    mensajeObj.attach(MIMEText(mensaje.format(dia, hora, vacuna), 'plain'))
+    try:
+        server = smtplib.SMTP('smtp.gmail.com: 587')
+        server.starttls()
+        server.login(mensajeObj['From'], password)
+        server.sendmail(mensajeObj['From'], mensajeObj['To'], mensajeObj.as_string())
+        print('correo enviado')
+        server.quit()
+    except:
+        print('error')
+
+def menuPrincipal():
+    while True:
+        opcion = input('Seleccione el modulo al que desea ingresar:\n1. Afiliados\n2. Lotes\n3. Planes de vacunacion\n4. Programacion de vacunacion\n5. Salir\n')
+        if opcion != '': 
+            opcion = int(opcion)
+            if (opcion == 1): menuModuloUno()
+            if (opcion == 2): menuModuloDos()
+            if (opcion == 3): menuModuloTres()
+            if (opcion == 4): menuModuloCuatro()
+            if (opcion == 5): break
+        else: continue
+
+def main():
+    crearTablas()
+    menuPrincipal()
+    
+main()
