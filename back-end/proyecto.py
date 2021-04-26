@@ -3,6 +3,8 @@ from sqlite3 import Error
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+# from datetime import datetime, date, time, timezone
+import datetime
 
 ## TODO comments
 
@@ -26,7 +28,7 @@ def crearTablas():
                     "telefono"	NUMERIC(12),
                     "correo"	CHAR(20),
                     "ciudad"	CHAR(20),
-                    "fechaNacimiento"	CHAR(10),
+                    "fechaNacimiento"	DATE,
                     "fechaAfiliacion"	CHAR(10),
                     "vacunado"	CHAR(20),
                     "fechaDesafiliacion"	CHAR(10),
@@ -50,27 +52,32 @@ def crearTablas():
                     PRIMARY KEY("noLote")
                 );
                 ''')
+    cursorObj.execute('update lote_vacunas set cantidadUsada = 0')
     # cursorObj.execute('''DROP TABLE plan_vacunacion''')
     cursorObj.execute('''
                 CREATE TABLE if not exists "plan_vacunacion" (
                     "idPlan"	NUMERIC(2),
                     "edadMinima"	NUMERIC(3),
                     "edadMaxima"	NUMERIC(3),
-                    "fechaInicio"	TEXT(10),
-                    "fechaFinal"	TEXT(10),
+                    "fechaInicio"	DATE,
+                    "fechaFinal"	DATE,
                     PRIMARY KEY("idPlan")
                 );
                 ''')
-    # cursorObj.execute('''DROP TABLE programacion_vacunas''')
+    cursorObj.execute('''DROP TABLE programacion_vacunas''')
     cursorObj.execute('''
                 CREATE TABLE if not exists "programacion_vacunas" (
-                    "ciudadVacunacion"	CHAR(20),
-                    "fechaProgramada"	CHAR(10),
-                    "horaProgramada"	CHAR(4),
+                    idCita      INTEGER,
                     "noId"      NUMERIC(12),
                     "noLote"	NUMERIC(12),
+                    "idPlan"    NUMERIC(12),
+                    "ciudadVacunacion"	CHAR(20),
+                    "fechaProgramada"	DATE,
+                    "horaProgramada"	TIME,
                     FOREIGN KEY("noId") REFERENCES "pacientes"("noId"),
-                    FOREIGN KEY("noLote") REFERENCES "lote_vacuna"("noLote")
+                    FOREIGN KEY("noLote") REFERENCES "lote_vacuna"("noLote"),
+                    FOREIGN KEY("idPlan") REFERENCES "plan_vacunacion"("idPlan"),
+                    PRIMARY KEY("idCita" AUTOINCREMENT)
                 );
                 ''')
     cursorObj.execute('''
@@ -293,12 +300,84 @@ def menuModuloCuatro():
         opcion = input('¿Desea crear la programacion de vacunacion?:\n1. Si\n2. No\n')
         if opcion != '': 
             opcion = int(opcion)
-            if (opcion == 1): programacionDeVacunacion()
+            if (opcion == 1): 
+                programacionDeVacunacion()
+                break
             if (opcion == 2): break
         else: continue
 
 def programacionDeVacunacion():
-    pass
+    programacionPacienteLote()
+    programacionFechaHora()
+
+def programacionPacienteLote():
+    con = sqlConnection() 
+    cursorObj = con.cursor()
+    cursorObj.execute('SELECT * FROM plan_vacunacion')
+    planVacunacion = cursorObj.fetchall()
+    for plan in planVacunacion:
+        # print(plan)
+        cursorObj.execute('SELECT noId, ciudad, CAST((julianday("now") - julianday(fechaNacimiento))/365.25 as INTEGER) as Edad FROM pacientes WHERE (Edad >= {}) AND (Edad <= {}) AND vacunado = "N" AND fechaDesafiliacion is Null'.format(plan[1], plan[2])) 
+        pacientesAVacunar = cursorObj.fetchall()
+        for paciente in pacientesAVacunar:
+            # print(paciente)
+            cursorObj.execute('SELECT noLote FROM lote_vacunas WHERE cantidadUsada<cantidadRecibida')
+            vacunaAAaplicar = cursorObj.fetchone()
+            if vacunaAAaplicar == None:
+                print('Limite de vacunas alcanzado')
+                return
+            datos = (paciente[1], paciente[0], vacunaAAaplicar[0], plan[0])
+            cursorObj.execute('INSERT INTO programacion_vacunas (ciudadVacunacion, noId, noLote, idPlan) VALUES (?,?,?,?)', datos)
+            cursorObj.execute('UPDATE lote_vacunas SET cantidadUsada = cantidadUsada+1 WHERE noLote = {}'.format(vacunaAAaplicar[0]))
+            con.commit()
+
+    con.close()
+
+def programacionFechaHora():
+    con = sqlConnection() 
+    cursorObj = con.cursor()
+    horaInicio = "08:00:00"
+    horaFin = "17:00:00"
+    cursorObj.execute('''SELECT pgv.*, plv.fechaInicio, pc.correo, lv.fabricante FROM programacion_vacunas pgv 
+                        INNER JOIN plan_vacunacion plv ON (plv.idPlan = pgv.idPlan) 
+                        INNER JOIN pacientes pc ON (pc.noid = pgv.noid) 
+                        INNER JOIN lote_vacunas lv ON (lv.noLote = pgv.noLote) 
+                        WHERE fechaProgramada IS NULL''')
+    personasAVacunar = cursorObj.fetchall()
+    for persona in personasAVacunar:
+        cursorObj.execute('SELECT fechaProgramada, max(horaProgramada) FROM programacion_vacunas WHERE fechaProgramada = (SELECT max(fechaProgramada) FROM programacion_vacunas)')
+        ultimaCitaProgramada =  cursorObj.fetchone()
+        # print(ultimaCitaProgramada)
+        if ultimaCitaProgramada[0] == None:
+            fechaCita = persona[7]
+            horaCita = horaInicio
+        else:
+            fechaMaxima = ultimaCitaProgramada[0]
+            horaMaxima = ultimaCitaProgramada[1]
+            hora = int(horaMaxima[0:2])
+            hora += 1
+            if hora >= int(horaFin[0:2]): 
+                horaCita = horaInicio
+                dt = datetime.datetime.strptime(fechaCita, "%Y-%m-%d")
+                fechaCitaDt = dt + datetime.timedelta(days=1)
+                fechaCita = fechaCitaDt.strftime("%Y-%m-%d")
+            else:
+                horaCita = '{}:00:00'.format(hora)
+                if hora < 10:
+                    horaCita = '0{}:00:00'.format(hora)
+                fechaCita = fechaMaxima
+
+            fechaCitaDt = datetime.datetime.strptime(fechaCita, "%Y-%m-%d")
+            fechaInicioDt = datetime.datetime.strptime(persona[7], "%Y-%m-%d")
+            if fechaCitaDt < fechaInicioDt:
+                fechaCita = fechaInicioDt.strftime("%Y-%m-%d")
+                horaCita = horaInicio
+        cursorObj.execute('update programacion_vacunas set fechaProgramada = ?, horaProgramada = ? where idCita = ?', (fechaCita, horaCita, persona[0]))
+        con.commit()
+        enviarCorreo(persona[8], fechaCita, horaCita, persona[9])
+
+    con.close()
+    print('Programacion de citas de vacunacion exitosa')
 
 def enviarCorreo(destinatario, dia, hora, vacuna):
     mensajeObj = MIMEMultipart()
@@ -320,16 +399,36 @@ def enviarCorreo(destinatario, dia, hora, vacuna):
     except:
         print('error')
 
+def menuModuloCinco():
+    while True:
+        opcion = input('Desea vacunar pacientes?:\n1. Si\n2. No\n')
+        if opcion != '': 
+            opcion = int(opcion)
+            if (opcion == 1): vacunacionPacientes()
+            if (opcion == 2): break
+        else: continue
+
+def vacunacionPacientes():
+    con = sqlConnection()
+    cursorObj = con.cursor()
+    documentoID = int(input('Ingrese a continuacion el documento de identidad de la persona que desea vacunar:\n'))
+    vacunado = input('¿Esta persona ha sido vacunada? (S/N):\n').title()
+    cursorObj.execute('UPDATE pacientes SET vacunado = "{}" WHERE noId = {}'.format(vacunado, documentoID))
+    con.commit()
+
+    con.close()
+
 def menuPrincipal():
     while True:
-        opcion = input('Seleccione el modulo al que desea ingresar:\n1. Afiliados\n2. Lotes\n3. Planes de vacunacion\n4. Programacion de vacunacion\n5. Salir\n')
+        opcion = input('Seleccione el modulo al que desea ingresar:\n1. Afiliados\n2. Lotes\n3. Planes de vacunacion\n4. Programacion de vacunacion\n5. Vacunar\n6. Salir\n')
         if opcion != '': 
             opcion = int(opcion)
             if (opcion == 1): menuModuloUno()
             if (opcion == 2): menuModuloDos()
             if (opcion == 3): menuModuloTres()
             if (opcion == 4): menuModuloCuatro()
-            if (opcion == 5): break
+            if (opcion == 5): menuModuloCinco()
+            if (opcion == 6): break
         else: continue
 
 def main():
