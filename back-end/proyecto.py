@@ -106,7 +106,7 @@ def menuModuloUno():
 def crearUsuario():
     con = sqlConnection() 
     cursorObj = con.cursor()
-    print('Ingrese a continuacion los datos de la persona que desea registrar:')
+    print('Ingrese a continuación los datos de la persona que desea registrar:')
     documentoID = int(input('Documento de Identidad:\n'))
     cursorObj.execute('SELECT * FROM pacientes WHERE noId = {}'.format(documentoID))
     resultado = cursorObj.fetchall()
@@ -125,7 +125,7 @@ def crearUsuario():
         añoNacimiento = input("Año: ")
         añoNacimiento = añoNacimiento.ljust(4)
         fechaNacimiento = "{}-{}-{}".format(añoNacimiento,mesNacimiento,diaNacimiento)
-        print('Fecha de afiliacion:')
+        print('Fecha de afiliación:')
         diaAfiliacion = input("Dia: ")
         diaAfiliacion = diaAfiliacion.ljust(2)
         mesAfiliacion = input("Mes: ")
@@ -144,7 +144,7 @@ def crearUsuario():
 def consultarUsuario():
     con = sqlConnection()
     cursorObj = con.cursor()
-    documentoID = int(input('Ingrese a continuacion el documento de identidad de la persona que desea consultar:\n'))
+    documentoID = int(input('Ingrese a continuación el documento de identidad de la persona que desea consultar:\n'))
     cursorObj.execute('SELECT * FROM pacientes WHERE noId = {}'.format(documentoID))
     resultado = cursorObj.fetchall()
     print('\n')
@@ -159,11 +159,11 @@ def consultarUsuario():
 def desafiliarUsuario():
     con = sqlConnection()
     cursorObj = con.cursor()
-    documentoID = int(input('Ingrese a continuacion el documento de identidad de la persona que desea desafiliar:\n'))
+    documentoID = int(input('Ingrese a continuación el documento de identidad de la persona que desea desafiliar:\n'))
     cursorObj.execute('SELECT * FROM pacientes WHERE noId = {}'.format(documentoID))
     resultado = cursorObj.fetchall()
     if len(resultado) != 0:
-        print('Fecha de desafiliacion:')
+        print('Fecha de desafiliación:')
         diaDesafiliacion = input("Dia: ")
         diaDesafiliacion = diaDesafiliacion.ljust(2)
         mesDesafiliacion = input("Mes: ")
@@ -179,7 +179,7 @@ def desafiliarUsuario():
 
 def menuModuloDos():
     while True:
-        opcion = input('Ingrese el numero de la opcion que desea realizar:\n1. Crear nuevo lote de vacunas\n2. Consultar lote de vacunas\n3. Salir\n')
+        opcion = input('Ingrese el numero de la opción que desea realizar:\n1. Crear nuevo lote de vacunas\n2. Consultar lote de vacunas\n3. Salir\n')
         if opcion != '': 
             opcion = int(opcion)
             if (opcion == 1): crearLote()
@@ -190,7 +190,7 @@ def menuModuloDos():
 def crearLote():
     con = sqlConnection() 
     cursorObj = con.cursor()
-    print('Ingrese a continuacion los datos del lote que desea registrar:')
+    print('Ingrese a continuación los datos del lote que desea registrar:')
     numeroLote = int(input('Numero del lote:\n'))
     cursorObj.execute('SELECT * FROM lote_vacunas WHERE noLote = {}'.format(numeroLote))
     resultado = cursorObj.fetchall()
@@ -202,7 +202,7 @@ def crearLote():
         dosisNecesaria = int(input('Dosis necesarias:\n'))
         temperatura = float(input('Temperatura de almacenamiento:\n'))
         efectividad = float(input('Efectividad de la vacuna:\n'))
-        tiempoProteccion = int(input('Tiempo de proteccion (meses):\n'))
+        tiempoProteccion = int(input('Tiempo de protección (meses):\n'))
         print('Fecha de vencimiento:')
         diaVencimiento = input("Dia: ")
         diaVencimiento = diaVencimiento.ljust(2)
@@ -225,7 +225,7 @@ def crearLote():
 def consultarLote():
     con = sqlConnection()
     cursorObj = con.cursor()
-    noLote = int(input('Ingrese a continuacion numero de lote que desea consultar:\n'))
+    noLote = int(input('Ingrese a continuación numero de lote que desea consultar:\n'))
     cursorObj.execute('SELECT * FROM lote_vacunas WHERE noLote = {}'.format(noLote))
     resultado = cursorObj.fetchall()
     print('\n')
@@ -250,7 +250,7 @@ def menuModuloTres():
 def crearPlanVacunacion():
     con = sqlConnection() 
     cursorObj = con.cursor()
-    print('Ingrese a continuacion los datos del plan de vacunación que desea crear:')
+    print('Ingrese a continuación los datos del plan de vacunación que desea crear:')
     idPlan = int(input('Codigo del plan:\n'))
     cursorObj.execute('SELECT * FROM plan_vacunacion WHERE idPlan = {}'.format(idPlan))
     resultado = cursorObj.fetchall()
@@ -265,7 +265,7 @@ def crearPlanVacunacion():
         añoInicio = input("Año: ")
         añoInicio = añoInicio.ljust(4)
         fechaInicio = "{}-{}-{}".format(añoInicio,mesInicio,diaInicio)
-        print('Fecha de finalizacion:')
+        print('Fecha de finalización:')
         diaFinal = input("Dia: ")
         diaFinal = diaFinal.ljust(2)
         mesFinal = input("Mes: ")
@@ -276,14 +276,14 @@ def crearPlanVacunacion():
         cursorObj.execute('INSERT INTO plan_vacunacion VALUES ({a},{b},{c},date("{d}"),date("{e}"))'.format(a=idPlan, b=edadMinima, c=edadMaxima, d=fechaInicio, e=fechaFinal))
         con.commit()
     else:
-        print('Este plan de vacunacion ya existe\n')
+        print('Este plan de vacunación ya existe\n')
     
     con.close()
 
 def consultarPlanVacunacion():
     con = sqlConnection()
     cursorObj = con.cursor()
-    idPlan = int(input('Ingrese a continuacion el codigo del plan de vacunacion que desea consultar:\n'))
+    idPlan = int(input('Ingrese a continuacion el codigo del plan de vacunación que desea consultar:\n'))
     cursorObj.execute('SELECT * FROM plan_vacunacion WHERE idPlan = {}'.format(idPlan))
     resultado = cursorObj.fetchall()
     print('\n')
@@ -297,7 +297,7 @@ def consultarPlanVacunacion():
 
 def menuModuloCuatro():
     while True:
-        opcion = input('¿Desea crear la programacion de vacunacion?:\n1. Si\n2. No\n')
+        opcion = input('¿Desea crear una nueva programación de vacunación?:\n1. Si\n2. No\n')
         if opcion != '': 
             opcion = int(opcion)
             if (opcion == 1): 
@@ -377,12 +377,12 @@ def programacionFechaHora():
         enviarCorreo(persona[8], fechaCita, horaCita, persona[9])
 
     con.close()
-    print('Programacion de citas de vacunacion exitosa')
+    print('Programación de citas de vacunación exitosa')
 
 def enviarCorreo(destinatario, dia, hora, vacuna):
     mensajeObj = MIMEMultipart()
     mensaje = '''Cordial saludo.
-    Le notificamos que su cita de vacunacion esta programada para el dia {} a las {}. Le sera aplicada la vacuna {}.'''
+    Le notificamos que su cita de vacunación esta programada para el dia {} a las {}. Le sera aplicada la vacuna {}.'''
 
     mensajeObj['From'] = 'pruebas.vacunacion@gmail.com'
     mensajeObj['To'] = destinatario
@@ -394,7 +394,7 @@ def enviarCorreo(destinatario, dia, hora, vacuna):
         server.starttls()
         server.login(mensajeObj['From'], password)
         server.sendmail(mensajeObj['From'], mensajeObj['To'], mensajeObj.as_string())
-        print('correo enviado')
+        print('Correo enviado')
         server.quit()
     except:
         print('error')
@@ -411,7 +411,7 @@ def menuModuloCinco():
 def vacunacionPacientes():
     con = sqlConnection()
     cursorObj = con.cursor()
-    documentoID = int(input('Ingrese a continuacion el documento de identidad de la persona que desea vacunar:\n'))
+    documentoID = int(input('Ingrese a continuación el documento de identidad de la persona que desea vacunar:\n'))
     vacunado = input('¿Esta persona ha sido vacunada? (S/N):\n').title()
     cursorObj.execute('UPDATE pacientes SET vacunado = "{}" WHERE noId = {}'.format(vacunado, documentoID))
     con.commit()
@@ -420,7 +420,7 @@ def vacunacionPacientes():
 
 def menuPrincipal():
     while True:
-        opcion = input('Seleccione el modulo al que desea ingresar:\n1. Afiliados\n2. Lotes\n3. Planes de vacunacion\n4. Programacion de vacunacion\n5. Vacunar\n6. Salir\n')
+        opcion = input('Seleccione el modulo al que desea ingresar:\n1. Afiliados\n2. Lotes\n3. Planes de vacunación\n4. Programacion de vacunación\n5. Vacunar\n6. Salir\n')
         if opcion != '': 
             opcion = int(opcion)
             if (opcion == 1): menuModuloUno()
